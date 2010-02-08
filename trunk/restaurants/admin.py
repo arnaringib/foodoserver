@@ -1,4 +1,4 @@
-from foodoserver.restaurants.models import Restaurant, Rating, Pricegroup, Type, Review, User
+from foodoserver.restaurants.models import Restaurant, Rating, Pricegroup, Type, Review, User, MenuItem
 from django.contrib import admin
 
 class RatingInline(admin.StackedInline):
@@ -7,9 +7,13 @@ class RatingInline(admin.StackedInline):
     
 class TypeInline(admin.StackedInline):
     model = Type
+    
+class MenuInline(admin.TabularInline):
+    model = MenuItem
 
 class RestaurantAdmin(admin.ModelAdmin):
-    inlines = [RatingInline]
+    inlines = [RatingInline, MenuInline]
+    list_display = ('name','rating_avg',)
 
 admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.register(Pricegroup)
