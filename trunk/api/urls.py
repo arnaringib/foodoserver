@@ -7,4 +7,6 @@ urlpatterns = patterns('foodoserver.api.views',
     (r'^restaurants/(?P<restaurant_id>\d+)/reviews/$', 'reviews'),
     (r'^restaurants/(?P<restaurant_id>\d+)/menu/$', 'menu'),
     (r'^types/$', 'types'),
+    (r'^users/signup/$', 'signup'),
+    (r'^users/login/$', 'login'),
 )

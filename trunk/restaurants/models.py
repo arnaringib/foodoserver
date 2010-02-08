@@ -2,11 +2,11 @@ from django.db import models
 from django.db.models import Avg
 
 class User(models.Model):
-    firstName = models.CharField(max_length=40)
-    lastName = models.CharField(max_length=40)
+    firstName = models.CharField(max_length=40, blank=True)
+    lastName = models.CharField(max_length=40, blank=True)
     email = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
-    apikey = models.CharField(max_length=40)
+    apikey = models.CharField(max_length=40, blank=True)
     
     def __unicode__(self):
         return "%s %s (%s)" % (self.firstName, self.lastName, self.email)
