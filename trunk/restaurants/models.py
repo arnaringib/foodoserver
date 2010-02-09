@@ -6,7 +6,7 @@ class User(models.Model):
     lastName = models.CharField(max_length=40, blank=True)
     email = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
-    apikey = models.CharField(max_length=40, blank=True)
+    apikey = models.CharField(max_length=40, blank=True, unique=True)
     
     def __unicode__(self):
         return "%s %s (%s)" % (self.firstName, self.lastName, self.email)
@@ -46,9 +46,9 @@ class Restaurant(models.Model):
     
     def __unicode__(self):
         return self.name
-    
-    def rating_range(self):
-        return range(1,6)
+        
+    def is_rating_valid(self,rating):
+        return (rating in range(1,6))
         
     def rating_avg(self):
         return self.rating_set.aggregate(Avg('rating'))['rating__avg']
