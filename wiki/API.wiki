@@ -8,7 +8,7 @@ Following is a list of available api commands for foodoserver
 
 = Restaurants =
 {{{
-/api/<restaurants>/
+/api/restaurants/
 }}}
 Lists all restaurants
 
