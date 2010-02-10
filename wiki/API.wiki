@@ -1,0 +1,51 @@
+#summary Available api commands
+#labels Phase-Implementation
+
+= Introduction =
+
+Following is a list of available api commands for foodoserver
+
+
+= Restaurants =
+{{{
+/api/<restaurants/
+}}}
+Lists all restaurants
+
+{{{
+/api/<restaurant_id>/
+}}}
+Details for restaurant with id: {{{<restaurant_id>}}}
+
+{{{
+/api/<restaurant_id>/reviews/
+}}}
+Reviews for restaurant with id: {{{<restaurant_id>}}}
+
+{{{
+/api/<restaurant_id>/menu/
+}}}
+Menu for restaurant with id: {{{<restaurant_id>}}}
+
+{{{
+/api/<restaurant_id>/rate/<rating>/<apikey>/
+}}}
+Submits rating for restaurant with id: {{{<restaurant_id>}}} for user with unique {{{<apikey>}}}
+
+
+= Types =
+{{{
+/api/types/
+}}}
+List of all registered restaurants types
+
+= Users = 
+{{{
+/api/users/signup/?username=<username>&password=<password>[&firstname=<firstname>][&lastname=<lastname>]
+}}}
+Registers new user. firstname and lastname are optional
+
+{{{
+/api/users/login/?username=<username>&password=<password>
+}}}
+Returns user object with api key for further interaction with the API
