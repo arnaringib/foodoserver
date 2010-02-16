@@ -1,0 +1,10 @@
+<center><img src="http://media.foodo.morpho.nord.is/splash.png" /></center>
+{% if restaurant_list %}
+<ul>
+	{% for restaurant in restaurant_list %}
+		<li>{{ restaurant }}</li>
+	{% endfor %}
+</ul>
+{% else %}
+	<p>No restaurants are available</p>
+{% endif %}
