@@ -4,7 +4,7 @@ from django.db.models import Avg
 class User(models.Model):
     firstName = models.CharField(max_length=40, blank=True)
     lastName = models.CharField(max_length=40, blank=True)
-    email = models.CharField(max_length=255)
+    email = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     apikey = models.CharField(max_length=40, blank=True, unique=True)
     
@@ -51,10 +51,6 @@ class Restaurant(models.Model):
         
     def is_rating_valid(self,rating):
         return (rating in range(1,6))
-        
-    def rating_avg(self):
-        return self.rating_set.aggregate(Avg('rating'))['rating__avg']
-    rating_avg.short_description = "Average Rating"
 
     class Meta:
         ordering = ('name',)
@@ -72,6 +68,7 @@ class Rating(models.Model):
     rating = models.IntegerField()
     restaurant = models.ForeignKey(Restaurant)
     user = models.ForeignKey(User)
+    created = models.DateTimeField(auto_now=True)
 
 class MenuItem(models.Model):    
     name = models.CharField(max_length=200)

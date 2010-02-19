@@ -4,8 +4,11 @@ from django.core.urlresolvers import reverse
 from django.core import serializers
 from django.db.models import Avg
 from django.utils import simplejson
+from datetime import datetime
 import hashlib
 import random
+
+#from django.db import connection
 
 from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating
 
@@ -25,7 +28,8 @@ def getRestaurantsDict(restaurants):
         'Restaurants': []
     }
     for r in restaurants:
-        d = {"pk": r.pk, "fields": {
+        d = {
+            "id": r.pk,
             "website": r.website,
             "city": r.city,
             "name": r.name,
@@ -39,26 +43,29 @@ def getRestaurantsDict(restaurants):
             "email": r.email,
             "types": [],
             "description": r.description,
-        }}
-        if (r.rating__rating__avg):
-            d['fields']['rating'] = r.rating__rating__avg
+        }
+        if (r.avg_rating):
+            d['rating'] = "%.1f" % r.avg_rating
         else:
-            d['fields']['rating'] = 0
+            d['rating'] = 0
         
         for t in r.types.all():
-            d['fields']['types'].append(t.id)
+            d['types'].append(t.id)
         
         r_d['Restaurants'].append(d)
     return r_d
 
+def getUserDict(user):
+    return {'User': {'email': user.email, 'apikey': user.apikey}}
+
 def index(request):
-    restaurants = Restaurant.objects.annotate(Avg('rating__rating')).order_by('pk')
+    restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating')).order_by('pk')
     r_dict = getRestaurantsDict(restaurants)
     return JsonResponse(r_dict)
     
 def detail(request, restaurant_id):
     try:
-        restaurant = Restaurant.objects.annotate(Avg('rating__rating')).get(pk=restaurant_id)
+        restaurant = Restaurant.objects.annotate(avg_rating=Avg('rating__rating')).get(pk=restaurant_id)
     except (KeyError, Restaurant.DoesNotExist):
         return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     else:
@@ -74,34 +81,56 @@ def menu(request, restaurant_id):
     else:
         d = {'Menu': []}
         for item in menu:
-            d['Menu'].append({"pk": item.id, "fields": {"price": item.price, "name": item.name}})
+            d['Menu'].append({"id": item.id, "price": item.price, "name": item.name})
         return JsonResponse(d)
     
-#TODO use JsonResponse 
 def reviews(request, restaurant_id):
-    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    data = serializers.serialize("json", Review.objects.filter(restaurant=restaurant))
-    return HttpResponse("{Reviews: %s}" % data)
-    
-def rate(request, restaurant_id, rating, apikey):
-    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    user = get_object_or_404(User, apikey=apikey)
-    
-    if restaurant.is_rating_valid(int(rating)):
-        r = Rating(user=user, restaurant=restaurant, rating=int(rating))
-        r.save()
-        return HttpResponseRedirect(reverse('foodo.api.views.detail', args=(restaurant.id,)))
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except (KeyError, Restaurant.DoesNotExist):
+        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     else:
-        return HttpResponse("Invalid rating: %s" % rating)
+        d = {'Reviews': []}
+        for review in Review.objects.filter(restaurant=restaurant):
+            d['Reviews'].append({
+                "id": review.id,
+                "description": review.description, 
+                "created": str(review.created),
+                "user": "%s %s" % (review.user.firstName, review.user.lastName),
+            })
+        return JsonResponse(d)
+
+def rate(request, restaurant_id, rating, apikey):
+    """ add a user rating for restaurant, user is limited to one rating"""
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+        user = User.objects.get(apikey=apikey)
+    except (KeyError, Restaurant.DoesNotExist):
+        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse(code=404, error='Bad apikey')
+    else:
+        if not restaurant.is_rating_valid(int(rating)):    
+            return JsonResponse(code=404, error='Invalid rating')
+        else:
+            try:
+                prev_rating = Rating.objects.get(user=user, restaurant=restaurant)
+                prev_rating.rating = int(rating)
+                prev_rating.save()
+            except (KeyError, Rating.DoesNotExist):
+                r = Rating(user=user, restaurant=restaurant, rating=int(rating))
+                r.save()
+            return detail(request, restaurant_id)
+            #return HttpResponseRedirect(reverse('foodo.api.views.detail', args=(restaurant.id,)))
 
 def types(request):
-    data = serializers.serialize("json", Type.objects.all().order_by('name'))
-    return HttpResponse("{Types: %s }" % data)
-
+    d = {'Types': []}
+    for t in Type.objects.all().order_by('name'):
+        d['Types'].append({"id": t.id, "name": t.name,})
+    return JsonResponse(d)
+    
 def signup(request):
     try:
-        existing_user = User.objects.get(email=request.GET['email'])
-    except (KeyError, User.DoesNotExist):
         apikey = hashlib.md5("%s%s%sFoodo" % (request.GET['email'], request.GET['password'], random.randint(1000,9999))).hexdigest()
         u = User(email=request.GET['email'], password=request.GET['password'], apikey=apikey)
         if (request.GET.__contains__('firstname')):
@@ -109,23 +138,13 @@ def signup(request):
         if (request.GET.__contains__('lastname')):
             u.lastName = request.GET['lastname']
         u.save();
-        data = serializers.serialize("json", [u,], fields=('email','apikey'))
-        return HttpResponse(data)
-    else:
-        return HttpResponse("{Error: \"User exists\"}")
+        return JsonResponse(getUserDict(u))
+    except:
+        return JsonResponse(code=404, error='User exists')
     
 def login(request):
     try:
-        user = User.objects.get(email=request.GET['email'])
+        user = User.objects.get(email=request.GET['email'], password=request.GET['password'])
+        return JsonResponse(getUserDict(user))
     except (KeyError, User.DoesNotExist):
-        return HttpResponse("{Error: \"Wrong username/password\"")
-    else:
-        if (user.password == request.GET['password']):
-            data = serializers.serialize("json", [user,], fields=('email','apikey'))
-            return HttpResponse(data)
-        else:
-            return HttpResponse("{Error: \"Wrong username/password\"")
-    
-    
-    
-    
+        return JsonResponse(code=404, error="Incorrect username/password")        
