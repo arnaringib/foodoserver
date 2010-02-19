@@ -3,21 +3,81 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.core import serializers
 from django.db.models import Avg
+from django.utils import simplejson
 import hashlib
 import random
 
 from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating
 
+def JsonResponse(data='', code=200, error=''): 
+    response_dict = {
+        'responseData': data,
+        'responseCode': code,
+    }
+    
+    if (error):
+        response_dict.update({'errorMessage': error})
+    
+    return HttpResponse(simplejson.dumps(response_dict, indent=4, ensure_ascii=True), mimetype='application/javascript')
+    
+def getRestaurantsDict(restaurants):
+    r_d = {
+        'Restaurants': []
+    }
+    for r in restaurants:
+        d = {"pk": r.pk, "fields": {
+            "website": r.website,
+            "city": r.city,
+            "name": r.name,
+            "zip": r.zip,
+            "created": str(r.created),
+            "pricegroup": r.pricegroup.pk,
+            "phone": r.phone,
+            "address": r.address,
+            "lat": r.lat,
+            "lng": r.lng,
+            "email": r.email,
+            "types": [],
+            "description": r.description,
+        }}
+        if (r.rating__rating__avg):
+            d['fields']['rating'] = r.rating__rating__avg
+        else:
+            d['fields']['rating'] = 0
+        
+        for t in r.types.all():
+            d['fields']['types'].append(t.id)
+        
+        r_d['Restaurants'].append(d)
+    return r_d
+
 def index(request):
-    data = serializers.serialize("json", Restaurant.objects.annotate(Avg('rating__rating')).order_by('pk'), indent=4)
-    # We need a better serializer to include the rating annotation
-    return HttpResponse("{Restaurants: %s }" % data)
+    restaurants = Restaurant.objects.annotate(Avg('rating__rating')).order_by('pk')
+    r_dict = getRestaurantsDict(restaurants)
+    return JsonResponse(r_dict)
     
 def detail(request, restaurant_id):
-    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    data = serializers.serialize("json", [restaurant,])
-    return HttpResponse("{Restaurant: %s}" % data)
+    try:
+        restaurant = Restaurant.objects.annotate(Avg('rating__rating')).get(pk=restaurant_id)
+    except (KeyError, Restaurant.DoesNotExist):
+        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
+    else:
+        r_dict = getRestaurantsDict([restaurant,])
+        return JsonResponse(r_dict)
     
+def menu(request, restaurant_id):
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+        menu = MenuItem.objects.filter(restaurant=restaurant)
+    except (KeyError, Restaurant.DoesNotExist):
+        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
+    else:
+        d = {'Menu': []}
+        for item in menu:
+            d['Menu'].append({"pk": item.id, "fields": {"price": item.price, "name": item.name}})
+        return JsonResponse(d)
+    
+#TODO use JsonResponse 
 def reviews(request, restaurant_id):
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
     data = serializers.serialize("json", Review.objects.filter(restaurant=restaurant))
@@ -37,11 +97,6 @@ def rate(request, restaurant_id, rating, apikey):
 def types(request):
     data = serializers.serialize("json", Type.objects.all().order_by('name'))
     return HttpResponse("{Types: %s }" % data)
-
-def menu(request, restaurant_id):
-    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
-    data = serializers.serialize("json", MenuItem.objects.filter(restaurant=restaurant))
-    return HttpResponse("{Menu: %s}" % data)
 
 def signup(request):
     try:
