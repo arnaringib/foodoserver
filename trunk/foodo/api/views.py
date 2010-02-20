@@ -2,13 +2,13 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.core import serializers
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.utils import simplejson
 from datetime import datetime
 import hashlib
 import random
 
-#from django.db import connection
+from django.db import connection
 
 from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating
 
@@ -49,6 +49,12 @@ def getRestaurantsDict(restaurants):
         else:
             d['rating'] = 0
         
+        if (r.count_rating):
+            d['rating_count'] = r.count_rating
+        else:
+            d['rating_count'] = 0
+        
+            
         for t in r.types.all():
             d['types'].append(t.id)
         
@@ -59,8 +65,9 @@ def getUserDict(user):
     return {'User': {'email': user.email, 'apikey': user.apikey}}
 
 def index(request):
-    restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating')).order_by('pk')
+    restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).order_by('pk')
     r_dict = getRestaurantsDict(restaurants)
+    print connection.queries
     return JsonResponse(r_dict)
     
 def detail(request, restaurant_id):

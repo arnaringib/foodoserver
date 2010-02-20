@@ -13,7 +13,7 @@ class MenuInline(admin.TabularInline):
 
 class RestaurantAdmin(admin.ModelAdmin):
     inlines = [RatingInline, MenuInline]
-    list_display = ('name','rating_avg',)
+#    list_display = ('name','rating_avg',)
 
 admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.register(Pricegroup)
