@@ -8,8 +8,6 @@ from datetime import datetime
 import hashlib
 import random
 
-from django.db import connection
-
 from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating
 
 def JsonResponse(data='', code=200, error=''): 
@@ -67,12 +65,11 @@ def getUserDict(user):
 def index(request):
     restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).order_by('pk')
     r_dict = getRestaurantsDict(restaurants)
-    print connection.queries
     return JsonResponse(r_dict)
     
 def detail(request, restaurant_id):
     try:
-        restaurant = Restaurant.objects.annotate(avg_rating=Avg('rating__rating')).get(pk=restaurant_id)
+        restaurant = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).get(pk=restaurant_id)
     except (KeyError, Restaurant.DoesNotExist):
         return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     else:
