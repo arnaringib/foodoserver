@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.core import serializers
 from django.db.models import Avg, Count
 from django.utils import simplejson
-from datetime import datetime
+import datetime
 import hashlib
 import random
 
@@ -69,6 +69,17 @@ def getRestaurantsDict(restaurants):
 def getUserDict(user):
     return {'User': {'email': user.email, 'apikey': user.apikey}}
 
+def getReviewDict(reviews):
+    d = {'Reviews': []}
+    for review in reviews:
+        d['Reviews'].append({
+            "id": review.id,
+            "description": review.description, 
+            "created": str(review.created),
+            "user": "%s %s" % (review.user.firstName, review.user.lastName),
+        })
+    return d
+
 def index(request):
     restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).order_by('pk')
     r_dict = getRestaurantsDict(restaurants)
@@ -101,15 +112,22 @@ def reviews(request, restaurant_id):
     except (KeyError, Restaurant.DoesNotExist):
         return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     else:
-        d = {'Reviews': []}
-        for review in Review.objects.filter(restaurant=restaurant):
-            d['Reviews'].append({
-                "id": review.id,
-                "description": review.description, 
-                "created": str(review.created),
-                "user": "%s %s" % (review.user.firstName, review.user.lastName),
-            })
+        d = getReviewDict(Review.objects.filter(restaurant=restaurant))
         return JsonResponse(d)
+
+def create_review(request, restaurant_id, apikey):
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+        user = User.objects.get(apikey=apikey)
+    except (KeyError, Restaurant.DoesNotExist):
+        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse(code=403, error='Bad apikey')
+    else:
+        r = Review(description='test', created=datetime.datetime.now(), restaurant=restaurant, user=user)
+        r.save()
+        return reviews(request, restaurant_id)
+        
 
 def rate(request, restaurant_id, rating, apikey):
     """ add a user rating for restaurant, user is limited to one rating"""
@@ -142,12 +160,12 @@ def types(request):
     
 def signup(request):
     try:
-        apikey = hashlib.md5("%s%s%sFoodo" % (request.GET['email'], request.GET['password'], random.randint(1000,9999))).hexdigest()
-        u = User(email=request.GET['email'], password=request.GET['password'], apikey=apikey)
-        if (request.GET.__contains__('firstname')):
-            u.firstName = request.GET['firstname']
-        if (request.GET.__contains__('lastname')):
-            u.lastName = request.GET['lastname']
+        apikey = hashlib.md5("%s%s%sFoodo" % (request.POST['email'], request.POST['password'], random.randint(1000,9999))).hexdigest()
+        u = User(email=request.POST['email'], password=request.POST['password'], apikey=apikey)
+        if (request.POST.__contains__('firstname')):
+            u.firstName = request.POST['firstname']
+        if (request.POST.__contains__('lastname')):
+            u.lastName = request.POST['lastname']
         u.save();
         return JsonResponse(getUserDict(u))
     except:
@@ -155,7 +173,7 @@ def signup(request):
     
 def login(request):
     try:
-        user = User.objects.get(email=request.GET['email'], password=request.GET['password'])
+        user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
         return JsonResponse(getUserDict(user))
     except (KeyError, User.DoesNotExist):
         return JsonResponse(code=403, error="Incorrect username/password")        
