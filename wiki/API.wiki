@@ -32,6 +32,12 @@ Menu for restaurant with id: {{{<restaurant_id>}}}
 }}}
 Submits rating for restaurant with id: {{{<restaurant_id>}}} for user with unique {{{<apikey>}}}
 
+{{{
+/api/<restaurant_id>/reviews/create/<apikey>/ (POST)
+
+review = <user review>
+}}}
+
 
 = Types =
 {{{
@@ -41,7 +47,15 @@ List of all registered restaurants types
 
 = Users = 
 {{{
-/api/users/signup/?username=<username>&password=<password>[&firstname=<firstname>][&lastname=<lastname>]
+/api/users/signup/ (POST)
+
+required:
+username=<username>
+password=<password>
+
+optional:
+firstname=<firstname>
+lastname=<lastname>
 }}}
 Registers new user. firstname and lastname are optional
 
