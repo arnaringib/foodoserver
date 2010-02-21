@@ -116,17 +116,20 @@ def reviews(request, restaurant_id):
         return JsonResponse(d)
 
 def create_review(request, restaurant_id, apikey):
-    try:
-        restaurant = Restaurant.objects.get(pk=restaurant_id)
-        user = User.objects.get(apikey=apikey)
-    except (KeyError, Restaurant.DoesNotExist):
-        return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
-    except (KeyError, User.DoesNotExist):
-        return JsonResponse(code=403, error='Bad apikey')
+    if request.method == 'POST' and "review" in request.POST:
+        try:
+            restaurant = Restaurant.objects.get(pk=restaurant_id)
+            user = User.objects.get(apikey=apikey)
+        except (KeyError, Restaurant.DoesNotExist):
+            return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error='Bad apikey')
+        else:
+            r = Review(description=request.POST['review'], created=datetime.datetime.now(), restaurant=restaurant, user=user)
+            r.save()
+            return reviews(request, restaurant_id)
     else:
-        r = Review(description=request.POST['review'], created=datetime.datetime.now(), restaurant=restaurant, user=user)
-        r.save()
-        return reviews(request, restaurant_id)
+        return JsonResponse(code=403, error='Bad request')
         
 
 def rate(request, restaurant_id, rating, apikey):
