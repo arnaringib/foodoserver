@@ -1,5 +1,5 @@
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.core.urlresolvers import reverse
 from django.core import serializers
 from django.db.models import Avg, Count
@@ -15,11 +15,18 @@ def JsonResponse(data='', code=200, error=''):
         'responseData': data,
         'responseCode': code,
     }
-    
+
     if (error):
         response_dict.update({'errorMessage': error})
+
+    result = simplejson.dumps(response_dict, indent=4, ensure_ascii=True)
     
-    return HttpResponse(simplejson.dumps(response_dict, indent=4, ensure_ascii=True), mimetype='application/javascript')
+    if (code == 200):
+        return HttpResponse(result, mimetype='application/javascript')
+    elif (code == 403):
+        return HttpResponseForbidden(result, mimetype='application/javascript')
+    else:
+        return HttpResponseNotFound(result, mimetype='application/javascript')
     
 def getRestaurantsDict(restaurants):
     r_d = {
@@ -112,7 +119,7 @@ def rate(request, restaurant_id, rating, apikey):
     except (KeyError, Restaurant.DoesNotExist):
         return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     except (KeyError, User.DoesNotExist):
-        return JsonResponse(code=404, error='Bad apikey')
+        return JsonResponse(code=403, error='Bad apikey')
     else:
         if not restaurant.is_rating_valid(int(rating)):    
             return JsonResponse(code=404, error='Invalid rating')
@@ -144,11 +151,11 @@ def signup(request):
         u.save();
         return JsonResponse(getUserDict(u))
     except:
-        return JsonResponse(code=404, error='User exists')
+        return JsonResponse(code=403, error='User exists')
     
 def login(request):
     try:
         user = User.objects.get(email=request.GET['email'], password=request.GET['password'])
         return JsonResponse(getUserDict(user))
     except (KeyError, User.DoesNotExist):
-        return JsonResponse(code=404, error="Incorrect username/password")        
+        return JsonResponse(code=403, error="Incorrect username/password")        
