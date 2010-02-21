@@ -162,17 +162,20 @@ def types(request):
     return JsonResponse(d)
     
 def signup(request):
-    try:
-        apikey = hashlib.md5("%s%s%sFoodo" % (request.POST['email'], request.POST['password'], random.randint(1000,9999))).hexdigest()
-        u = User(email=request.POST['email'], password=request.POST['password'], apikey=apikey)
-        if (request.POST.__contains__('firstname')):
-            u.firstName = request.POST['firstname']
-        if (request.POST.__contains__('lastname')):
-            u.lastName = request.POST['lastname']
-        u.save();
-        return JsonResponse(getUserDict(u))
-    except:
-        return JsonResponse(code=403, error='User exists')
+    if request.method == 'POST' and 'email' in request.POST and 'password' in request.POST:
+        try:
+            apikey = hashlib.md5("%s%s%sFoodo" % (request.POST['email'], request.POST['password'], random.randint(1000,9999))).hexdigest()
+            u = User(email=request.POST['email'], password=request.POST['password'], apikey=apikey)
+            if ('firstname' in request.POST):
+                u.firstName = request.POST['firstname']
+            if ('lastname' in request.POST):
+                u.lastName = request.POST['lastname']
+            u.save();
+            return JsonResponse(getUserDict(u))
+        except:
+            return JsonResponse(code=403, error='User exists')
+    else:
+        return JsonResponse(code=403, error='Bad request')
     
 def login(request):
     try:
