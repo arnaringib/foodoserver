@@ -124,7 +124,7 @@ def create_review(request, restaurant_id, apikey):
     except (KeyError, User.DoesNotExist):
         return JsonResponse(code=403, error='Bad apikey')
     else:
-        r = Review(description='test', created=datetime.datetime.now(), restaurant=restaurant, user=user)
+        r = Review(description=request.POST['review'], created=datetime.datetime.now(), restaurant=restaurant, user=user)
         r.save()
         return reviews(request, restaurant_id)
         
