@@ -178,8 +178,11 @@ def signup(request):
         return JsonResponse(code=403, error='Bad request')
     
 def login(request):
-    try:
-        user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
-        return JsonResponse(getUserDict(user))
-    except (KeyError, User.DoesNotExist):
-        return JsonResponse(code=403, error="Incorrect username/password")        
+    if request.method == 'POST' and 'email' in request.POST and 'password' in request.POST:
+        try:
+            user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
+            return JsonResponse(getUserDict(user))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error="Incorrect username/password")        
+    else:
+        return JsonResponse(code=403, error='Bad request')
