@@ -7,59 +7,63 @@ Following is a list of available api commands for foodoserver
 
 
 = Restaurants =
+==Lists all restaurants==
 {{{
 /api/restaurants/
 }}}
-Lists all restaurants
 
+==Details for restaurant with id: {{{<restaurant_id>}}}==
 {{{
 /api/<restaurant_id>/
 }}}
-Details for restaurant with id: {{{<restaurant_id>}}}
 
+==Reviews for restaurant with id: {{{<restaurant_id>}}}==
 {{{
 /api/<restaurant_id>/reviews/
 }}}
-Reviews for restaurant with id: {{{<restaurant_id>}}}
 
+==Menu for restaurant with id: {{{<restaurant_id>}}}==
 {{{
 /api/<restaurant_id>/menu/
 }}}
-Menu for restaurant with id: {{{<restaurant_id>}}}
 
+==Submits rating for restaurant with id: {{{<restaurant_id>}}} for user with unique {{{<apikey>}}}==
 {{{
 /api/<restaurant_id>/rate/<rating>/<apikey>/
 }}}
-Submits rating for restaurant with id: {{{<restaurant_id>}}} for user with unique {{{<apikey>}}}
 
+==Submit a review for restaurant==
 {{{
 /api/<restaurant_id>/reviews/create/<apikey>/ (POST)
-
 review = <user review>
 }}}
 
-
 = Types =
+==List of all registered restaurants types==
 {{{
 /api/types/
 }}}
-List of all registered restaurants types
 
 = Users = 
+==Registers new user==
 {{{
 /api/users/signup/ (POST)
 
 required:
-username=<username>
-password=<password>
+email
+password
 
 optional:
-firstname=<firstname>
-lastname=<lastname>
+firstname
+lastname
 }}}
-Registers new user. firstname and lastname are optional
 
+==Signup==
 {{{
-/api/users/login/?username=<username>&password=<password>
+/api/users/login/
+
+required:
+email
+password
 }}}
 Returns user object with api key for further interaction with the API
