@@ -14,27 +14,27 @@ Following is a list of available api commands for foodoserver
 
 ==Details for restaurant with id: {{{<restaurant_id>}}}==
 {{{
-/api/<restaurant_id>/
+/api/restaurants/<restaurant_id>/
 }}}
 
 ==Reviews for restaurant with id: {{{<restaurant_id>}}}==
 {{{
-/api/<restaurant_id>/reviews/
+/api/restaurants/<restaurant_id>/reviews/
 }}}
 
 ==Menu for restaurant with id: {{{<restaurant_id>}}}==
 {{{
-/api/<restaurant_id>/menu/
+/api/restaurants/<restaurant_id>/menu/
 }}}
 
 ==Submits rating for restaurant with id: {{{<restaurant_id>}}} for user with unique {{{<apikey>}}}==
 {{{
-/api/<restaurant_id>/rate/<rating>/<apikey>/
+/api/restaurants/<restaurant_id>/rate/<rating>/<apikey>/
 }}}
 
 ==Submit a review for restaurant==
 {{{
-/api/<restaurant_id>/reviews/create/<apikey>/ (POST)
+/api/restaurants/<restaurant_id>/reviews/create/<apikey>/ (POST)
 review = <user review>
 }}}
 
