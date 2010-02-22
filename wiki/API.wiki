@@ -58,7 +58,7 @@ firstname
 lastname
 }}}
 
-==Signup==
+==Login==
 {{{
 /api/users/login/
 
