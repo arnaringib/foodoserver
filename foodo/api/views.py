@@ -67,7 +67,7 @@ def getRestaurantsDict(restaurants):
     return r_d
 
 def getUserDict(user):
-    return {'User': {'email': user.email, 'apikey': user.apikey}}
+    return {'User': {'email': user.email, 'apikey': user.apikey, 'firstName': user.firstName, 'lastName': user.lastName, }}
 
 def getReviewDict(reviews):
     d = {'Reviews': []}
