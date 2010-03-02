@@ -75,4 +75,19 @@ class MenuItem(models.Model):
     price = models.IntegerField()
     restaurant = models.ForeignKey(Restaurant)
     
+    def __unicode__(self):
+        return self.name
     
+class Order(models.Model):
+    user = models.ForeignKey(User)
+    restaurant = models.ForeignKey(Restaurant)
+    created = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return "#%d - Order for %s" % (self.pk, self.restaurant.name)
+    
+class OrderLine(models.Model):
+    item = models.ForeignKey(MenuItem)
+    order = models.ForeignKey(Order)
+    count = models.IntegerField()
+    price = models.IntegerField()
