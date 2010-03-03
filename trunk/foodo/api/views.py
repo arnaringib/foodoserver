@@ -8,7 +8,7 @@ import datetime
 import hashlib
 import random
 
-from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating
+from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating, Order, OrderLine
 
 def JsonResponse(data='', code=200, error=''): 
     response_dict = {
@@ -78,6 +78,10 @@ def getReviewDict(reviews):
             "created": str(review.created),
             "user": "%s %s" % (review.user.firstName, review.user.lastName),
         })
+    return d
+    
+def getOrderDict(order):
+    d = {'Order': {'id': order.pk, 'user': order.user.lastName}}
     return d
 
 def index(request):
@@ -186,3 +190,49 @@ def login(request):
             return JsonResponse(code=403, error="Incorrect username/password")        
     else:
         return JsonResponse(code=403, error='Bad request')
+
+def order(request):
+    if request.method == 'POST':
+        try:
+            restaurant = Restaurant.objects.get(pk=int(request.POST['restaurant_id']))
+            user = User.objects.get(apikey=request.POST['apikey'])
+        except (KeyError, Restaurant.DoesNotExist):
+            return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % int(request.POST['restaurant_id']))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error='Bad apikey')
+        else:
+            decoder = simplejson.JSONDecoder()
+            order = decoder.decode(request.POST['order'])
+            
+            o = Order(restaurant=restaurant, user=user)
+            o.save()
+                        
+            for item in order:
+                menuitem = MenuItem.objects.get(pk=int(item['id']))
+                print menuitem
+                ol = OrderLine(item=menuitem, order=o, count=int(item['amount']), price=menuitem.price)            
+                ol.save()
+                
+            return JsonResponse(getOrderDict(o))
+    else:
+        return JsonResponse(code=403, error='Bad request')
+        
+'''
+def order(request):
+    if request.method == 'POST':
+        try:
+            restaurant = Restaurant.objects.get(pk=int(request.POST['restaurant_id']))
+            user = User.objects.get(apikey=request.POST['apikey'])
+        except (KeyError, Restaurant.DoesNotExist):
+            return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % request.POST['restaurant_id'])
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error='Bad apikey')
+        else:
+            # save order
+            o = Order(restaurant=restaurant, user=user)
+            o.save()
+            
+            return JsonResponse(getOrderDict(order))
+    else:
+        return JsonResponse(code=403, error='Bad request')
+'''     
