@@ -2,6 +2,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.core.urlresolvers import reverse
 from django.core import serializers
+from django.core.mail import send_mail
 from django.db.models import Avg, Count
 from django.utils import simplejson
 import datetime
@@ -83,6 +84,24 @@ def getReviewDict(reviews):
 def getOrderDict(order):
     d = {'Order': {'id': order.pk, 'user': order.user.lastName}}
     return d
+    
+def createOrderMessage(order):
+    m = '''
+Order number: \t %d
+Date: \t %s 
+User: %s
+------------------------
+Item \t Price
+''' % (order.id, order.created, "%s %s (%s)" % (order.user.firstName, order.user.lastName, order.user.email))
+    
+    s = 0
+    for line in order.orderline_set.all():
+        m += "%s \t %d \n" % (line.item.name, line.price)
+        s += line.price
+        
+    m += "------------------------\nTotal: \t %d" % s
+    
+    return m
 
 def index(request):
     restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).order_by('pk')
@@ -211,7 +230,10 @@ def order(request):
                 menuitem = MenuItem.objects.get(pk=int(item['id']))
                 ol = OrderLine(item=menuitem, order=o, count=int(item['amount']), price=menuitem.price)            
                 ol.save()
-                
+            
+            
+            send_mail('Order from Foodo (#%d)' % o.pk, createOrderMessage(o), 'foodogroup@gmail.com', ['foodogroup@gmail.com'], fail_silently=False)
+            
             return JsonResponse(getOrderDict(o))
     else:
         return JsonResponse(code=403, error='Bad request')
