@@ -209,7 +209,6 @@ def order(request):
                         
             for item in order:
                 menuitem = MenuItem.objects.get(pk=int(item['id']))
-                print menuitem
                 ol = OrderLine(item=menuitem, order=o, count=int(item['amount']), price=menuitem.price)            
                 ol.save()
                 
