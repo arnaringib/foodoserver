@@ -96,8 +96,8 @@ Item \t Price
     
     s = 0
     for line in order.orderline_set.all():
-        m += "%s \t %d \n" % (line.item.name, line.price)
-        s += line.price
+        m += "%d x %s \t %d \n" % (line.count, line.item.name, line.price*line.count)
+        s += line.price*line.count
         
     m += "------------------------\nTotal: \t %d" % s
     
