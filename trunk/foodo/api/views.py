@@ -67,8 +67,14 @@ def getRestaurantsDict(restaurants):
         r_d['Restaurants'].append(d)
     return r_d
 
-def getUserDict(user):
-    return {'User': {'email': user.email, 'apikey': user.apikey, 'firstName': user.firstName, 'lastName': user.lastName, }}
+def getUserDict(user, orders, reviews):
+    return {'User': {'email': user.email,
+                     'apikey': user.apikey,
+                     'firstName': user.firstName,
+                     'lastName': user.lastName,
+                     'reviews': reviews,
+                     'orders': orders,
+                     }}
 
 def getReviewDict(reviews):
     d = {'Reviews': []}
@@ -136,7 +142,7 @@ def reviews(request, restaurant_id):
         return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % restaurant_id)
     else:
         d = getReviewDict(Review.objects.filter(restaurant=restaurant))
-        return JsonResponse(d)
+        return JsonResponse(d)    
 
 def create_review(request, restaurant_id, apikey):
     if request.method == 'POST' and "review" in request.POST:
@@ -153,7 +159,6 @@ def create_review(request, restaurant_id, apikey):
             return reviews(request, restaurant_id)
     else:
         return JsonResponse(code=403, error='Bad request')
-        
 
 def rate(request, restaurant_id, rating, apikey):
     """ add a user rating for restaurant, user is limited to one rating"""
@@ -204,7 +209,9 @@ def login(request):
     if request.method == 'POST' and 'email' in request.POST and 'password' in request.POST:
         try:
             user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
-            return JsonResponse(getUserDict(user))
+            reviews = Review.objects.filter(user=user).count()
+            orders = Order.objects.filter(user=user).count()
+            return JsonResponse(getUserDict(user,orders,reviews))
         except (KeyError, User.DoesNotExist):
             return JsonResponse(code=403, error="Incorrect username/password")        
     else:
