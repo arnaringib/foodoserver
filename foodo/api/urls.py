@@ -11,6 +11,7 @@ urlpatterns = patterns('foodo.api.views',
     (r'^types/$', 'types'),
     (r'^users/signup/$', 'signup'),
     (r'^users/login/$', 'login'),
-    (r'^users/edit/$', 'edit'),
+    (r'^users/edit/userinfo/$', 'edit'),
+    (r'^users/edit/password/$', 'editpassword'),
     (r'^order/$', 'order'),
 )

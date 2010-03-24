@@ -218,9 +218,9 @@ def login(request):
         return JsonResponse(code=403, error='Bad request')
     
 def edit(request):
-    if request.method == 'POST' and 'email' in request.POST and 'password' in request.POST:
+    if request.method == 'POST' and 'apikey' in request.POST and 'password' in request.POST:
         try: 
-            user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
+            user = User.objects.get(apikey=request.POST['apikey'], password=request.POST['password'])
 
             reviews = Review.objects.filter(user=user).count()
             orders = Order.objects.filter(user=user).count()            
@@ -231,7 +231,26 @@ def edit(request):
             newapikey = hashlib.md5("%s%s%sFoodo" % (request.POST['newemail'], request.POST['password'], random.randint(1000,9999))).hexdigest()
             user.apikey = newapikey                
             
-            user.save();
+            user.save()
+            return JsonResponse(getUserDict(user,reviews,orders))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error="Incorrect username/password")
+    else:
+        return JsonResponse(code=403, error='Bad request')
+
+def editpassword(request):
+    if request.method == 'POST' and 'apikey' in request.POST and 'password' in request.POST:
+        try:
+            user = User.objects.get(apikey=request.POST['apikey'], password=request.POST['password'])
+
+            reviews = Review.objects.filter(user=user).count()
+            orders = Order.objects.filter(user=user).count()
+
+            user.password = request.POST['newpassword']
+            newapikey = hashlib.md5("%s%s%sFoodo" % (user.email, request.POST['newpassword'], random.randint(1000,9999))).hexdigest()
+            user.apikey = newapikey                
+
+            user.save()
             return JsonResponse(getUserDict(user,reviews,orders))
         except (KeyError, User.DoesNotExist):
             return JsonResponse(code=403, error="Incorrect username/password")
