@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet" href="style.css" />
+    <title>Foodo {% block title %}{% endblock %}</title>
+    
+    <style type="text/css" media="screen">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #top {
+            border-bottom: 1px solid #000;
+            text-align: center;
+        }
+        #content {
+            padding: 1em 2em;
+        }
+        #actions {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        #actions ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #actions ul li {
+            padding: 0;
+            margin: 0;
+            width: 50%;
+            float: left;
+            text-align: center;
+        }
+        #actions ul li a {
+            display: block;
+            padding: 10px;
+            border: 2px solid blue;
+            margin: 2px;
+        } 
+    </style>
+</head>
+
+<body>
+    <div id="top">
+        {% block top %}
+            <h1>Foodo</h1>
+        {% endblock %}
+    </div>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+    <div id="actions">
+        {% block actions %}{% endblock %}
+    </div>
+</body>
+</html>
