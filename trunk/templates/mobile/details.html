@@ -1,0 +1,28 @@
+{% extends "mobile/base.html" %}
+
+{% block title %} - {{restaurant.name}} {% endblock %}
+
+{% block content %}
+<p> 
+    <strong>{{restaurant.name}}</strong> <br />
+    {{restaurant.address}} <br />
+    {{restaurant.zip}} {{restaurant.city}} <br />
+</p>
+<p>
+    {{restaurant.phone}} <br />
+    {{restaurant.website}} <br />
+</p>
+
+<p>
+This restaurant is in Foodo. To access more information open it in Foodo!
+</p>
+    
+{% endblock %}
+
+
+{% block actions %}
+<ul>
+    <li><a class="btn blue" href="market://search?q=pname:is.hi.foodo">Get Foodo!</a></li>
+    <li><a class="btn blue" href="foodo://restaurant/{{restaurant.id}}/">Open in Foodo</a></li>
+</ul>
+{% endblock %}
