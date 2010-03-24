@@ -15,6 +15,10 @@ def detail(request, restaurant_id):
     restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
     return render_to_response('restaurants/detail.html', {'restaurant': restaurant})
 
+def mobile(request, restaurant_id):
+    restaurant = get_object_or_404(Restaurant, pk=restaurant_id)
+    return render_to_response('restaurants/mobile.html', {'restaurant': restaurant})
+
 def rate(request, restaurant_id):
     r = get_object_or_404(Restaurant, pk=restaurant_id)
     if int(request.POST['rating']) in range(1,6):
