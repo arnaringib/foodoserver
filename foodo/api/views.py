@@ -199,7 +199,7 @@ def signup(request):
             if ('lastname' in request.POST):
                 u.lastName = request.POST['lastname']
             u.save();
-            return JsonResponse(getUserDict(u))
+            return JsonResponse(getUserDict(u,0,0))
         except:
             return JsonResponse(code=403, error='User exists')
     else:
@@ -214,6 +214,27 @@ def login(request):
             return JsonResponse(getUserDict(user,orders,reviews))
         except (KeyError, User.DoesNotExist):
             return JsonResponse(code=403, error="Incorrect username/password")        
+    else:
+        return JsonResponse(code=403, error='Bad request')
+    
+def edit(request):
+    if request.method == 'POST' and 'email' in request.POST and 'password' in request.POST:
+        try: 
+            user = User.objects.get(email=request.POST['email'], password=request.POST['password'])
+
+            reviews = Review.objects.filter(user=user).count()
+            orders = Order.objects.filter(user=user).count()            
+
+            user.firstName = request.POST['newfirstname']
+            user.lastName = request.POST['newlastname']
+            user.email = request.POST['newemail']
+            newapikey = hashlib.md5("%s%s%sFoodo" % (request.POST['newemail'], request.POST['password'], random.randint(1000,9999))).hexdigest()
+            user.apikey = newapikey                
+            
+            user.save();
+            return JsonResponse(getUserDict(user,reviews,orders))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error="Incorrect username/password")
     else:
         return JsonResponse(code=403, error='Bad request')
 
