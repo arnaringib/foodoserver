@@ -66,4 +66,24 @@ required:
 email
 password
 }}}
+
+==Edit==
+==Edit Info==
+{{{
+/api/users/edit/userinfo/(POST)
+
+required:
+apikey
+password
+}}}
+
+
+==Password==
+{{{
+/api/users/edit/password/(POST)
+
+required:
+apikey
+password
+}}}
 Returns user object with api key for further interaction with the API
