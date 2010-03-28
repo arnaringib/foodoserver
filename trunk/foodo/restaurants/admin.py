@@ -13,6 +13,8 @@ class MenuInline(admin.TabularInline):
 
 class RestaurantAdmin(admin.ModelAdmin):
     inlines = [RatingInline, MenuInline]
+    list_display = ('__unicode__', 'qrcode')
+    
 #    list_display = ('name','rating_avg',)
 
 class OrderLineInline(admin.TabularInline):
