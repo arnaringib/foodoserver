@@ -51,6 +51,10 @@ class Restaurant(models.Model):
         
     def is_rating_valid(self,rating):
         return (rating in range(1,6))
+        
+    def qrcode(self):
+        return "<a href='http://chart.apis.google.com/chart?cht=qr&chs=300x300&chl=http://foodo.morpho.nord.is/m/restaurants/%d/' target='_blank'>QR Code</a>" % self.id
+    qrcode.allow_tags = True
 
     class Meta:
         ordering = ('name',)
