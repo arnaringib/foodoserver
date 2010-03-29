@@ -13,5 +13,7 @@ urlpatterns = patterns('foodo.api.views',
     (r'^users/login/$', 'login'),
     (r'^users/edit/userinfo/$', 'edit'),
     (r'^users/edit/password/$', 'editpassword'),
+    (r'^users/orders/(?P<apikey>\w+)/$', 'userorders'),
+    (r'^users/reviews/(?P<apikey>\w+)/$', 'userreviews'),
     (r'^order/$', 'order'),
 )

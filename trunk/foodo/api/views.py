@@ -76,6 +76,35 @@ def getUserDict(user, orders, reviews):
                      'orders': orders,
                      }}
 
+def getUserOrders(orders):
+    d = {'Orders': []}
+    for order in orders:
+        r_b = {'restaurant_id': order.restaurant.pk,
+               'created': str(order.created)[0:19],
+               'orderlines': [],}
+        orderlines = OrderLine.objects.filter(order=order)
+        for orderline in orderlines:
+            r = {'price': orderline.price,
+                 'count': orderline.count,
+                 'menuitem': orderline.item.name,
+                 'menuitem_id': orderline.item.id,
+                 'menuitem_price': orderline.item.price,}
+            r_b['orderlines'].append(r)
+        d['Orders'].append(r_b)
+    return d
+
+def getUserReviews(reviews):
+    d = {'Reviews': []}
+    for review in reviews:
+        d['Reviews'].append({
+            'id': review.id,
+            'description': review.description,
+            'created': str(review.created)[0:19],
+            'restaurant_id': review.restaurant.id,
+        })
+    return d
+
+
 def getReviewDict(reviews):
     d = {'Reviews': []}
     for review in reviews:
@@ -216,7 +245,23 @@ def login(request):
             return JsonResponse(code=403, error="Incorrect username/password")        
     else:
         return JsonResponse(code=403, error='Bad request')
-    
+
+def userorders(request,apikey):
+    try:
+        user = User.objects.get(apikey=apikey)
+        orders = Order.objects.filter(user=user).order_by('created')
+        return JsonResponse(getUserOrders(orders))
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse(code=404, error='User does not exists: (%s)' % apikey)
+
+def userreviews(request,apikey):
+    try:
+        user = User.objects.get(apikey=apikey)
+        reviews = Review.objects.filter(user=user)
+        return JsonResponse(getUserReviews(reviews))
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse(code=404, error='User does not exists: (%s)' % apikey)
+
 def edit(request):
     if request.method == 'POST' and 'apikey' in request.POST and 'password' in request.POST:
         try: 
