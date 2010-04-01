@@ -246,6 +246,18 @@ def login(request):
     else:
         return JsonResponse(code=403, error='Bad request')
 
+def info(request):
+    if request.method == 'POST' and 'apikey' in request.POST:
+        try:
+            user = User.objects.get(apikey=request.POST['apikey'])
+            reviews = Review.objects.filter(user=user).count()
+            orders = Order.objects.filter(user=user).count()
+            return JsonResponse(getUserDict(user,orders,reviews))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error="Incorrect apikey")
+    else:
+        return JsonResponse(code=403, error='Bad request')
+
 def userorders(request,apikey):
     try:
         user = User.objects.get(apikey=apikey)
