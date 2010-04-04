@@ -67,6 +67,15 @@ email
 password
 }}}
 
+==Info==
+{{{
+/api/users/info/
+
+required:
+apikey
+}}}
+returns the user information
+
 ==Edit==
 ===Edit Info===
 {{{
