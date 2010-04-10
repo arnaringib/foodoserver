@@ -1,4 +1,4 @@
-from foodo.restaurants.models import Restaurant, Rating, Pricegroup, Type, Review, User, MenuItem, Order, OrderLine
+from foodo.restaurants.models import Restaurant, Rating, Pricegroup, Type, Review, User, MenuItem, Order, OrderLine, RestaurantLogo
 from django.contrib import admin
 
 class RatingInline(admin.StackedInline):
@@ -10,9 +10,12 @@ class TypeInline(admin.StackedInline):
     
 class MenuInline(admin.TabularInline):
     model = MenuItem
+    
+class LogoInline(admin.TabularInline):
+    model = RestaurantLogo
 
 class RestaurantAdmin(admin.ModelAdmin):
-    inlines = [RatingInline, MenuInline]
+    inlines = [LogoInline,RatingInline, MenuInline]
     list_display = ('__unicode__', 'qrcode')
     
 #    list_display = ('name','rating_avg',)
