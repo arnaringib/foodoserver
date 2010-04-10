@@ -45,7 +45,6 @@ class Restaurant(models.Model):
     pricegroup = models.ForeignKey(Pricegroup)
     types = models.ManyToManyField(Type, blank=True)
     
-    
     def __unicode__(self):
         return self.name
         
@@ -58,6 +57,13 @@ class Restaurant(models.Model):
 
     class Meta:
         ordering = ('name',)
+        
+def get_restaurantlogo_name(instance, filename):
+    return 'logo/%i.jpg' % instance.restaurant.id
+
+class RestaurantLogo(models.Model):
+    logo = models.FileField(upload_to=get_restaurantlogo_name)
+    restaurant = models.OneToOneField(Restaurant)
 
 class Review(models.Model):
     description = models.TextField(blank=True)
