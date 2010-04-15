@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Avg
+import math
 
 class User(models.Model):
     firstName = models.CharField(max_length=40, blank=True)
@@ -54,6 +55,16 @@ class Restaurant(models.Model):
     def qrcode(self):
         return "<a href='http://chart.apis.google.com/chart?cht=qr&chs=300x300&chl=http://foodo.morpho.nord.is/m/restaurants/%d/' target='_blank'>QR Code</a>" % self.id
     qrcode.allow_tags = True
+    
+    def distanceFrom(self, lat, lng):
+        lat1 = float(self.lat)/1000000.0
+        lon1 = float(self.lng)/1000000.0
+        lat2 = float(lat)
+        lon2 = float(lng)
+        
+        x = (math.sin(lat1/57.2958) * math.sin(lat2/57.2958)) + (math.cos(lat1/57.2958) * math.cos(lat2/57.2958) * math.cos(lon2/57.2958 - lon1/57.2958))
+        d = 6378.8 * math.atan(math.sqrt(1-x**2)/x)
+        return d
 
     class Meta:
         ordering = ('name',)
