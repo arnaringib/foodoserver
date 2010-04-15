@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('foodo.api.views',
     (r'^restaurants/$', 'index'),
+    (r'^restaurants/near/(?P<lat>\-?\d+\.\d+)/(?P<lng>\-?\d+\.\d+)/(?P<km_distance>\d+)/$', 'near'),
     (r'^restaurants/(?P<restaurant_id>\d+)/$', 'detail'),
     (r'^restaurants/(?P<restaurant_id>\d+)/$', 'detail'),
     (r'^restaurants/(?P<restaurant_id>\d+)/reviews/$', 'reviews'),

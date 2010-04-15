@@ -8,6 +8,7 @@ from django.utils import simplejson
 import datetime
 import hashlib
 import random
+import math
 
 from foodo.restaurants.models import Restaurant, Type, Review, MenuItem, User, Rating, Order, OrderLine
 
@@ -361,3 +362,22 @@ def order(request):
     else:
         return JsonResponse(code=403, error='Bad request')
 '''     
+
+def near(request, lat, lng, km_distance):
+    restaurants = Restaurant.objects.annotate(avg_rating=Avg('rating__rating'), count_rating=Count('rating__rating')).order_by('pk')
+    filtered = []
+    for r in restaurants:
+        if r.distanceFrom(float(lat), float(lng)) <= int(km_distance):
+            filtered.append(r)
+        
+    r_dict = getRestaurantsDict(filtered)
+    return JsonResponse(r_dict)
+
+
+
+
+
+
+
+
+
