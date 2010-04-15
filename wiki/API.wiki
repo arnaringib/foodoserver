@@ -38,6 +38,11 @@ Following is a list of available api commands for foodoserver
 review = <user review>
 }}}
 
+==Restaurants near a given GPS point==
+{{{
+/api/restaurants/near/<lat>/<lng>/<distance_km>/
+}}}
+
 = Types =
 ==List of all registered restaurants types==
 {{{
