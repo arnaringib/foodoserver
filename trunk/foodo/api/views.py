@@ -289,10 +289,17 @@ def editreview(request):
            return JsonResponse(code=404, error='Restaurant does not exists: (%s)' % int(request.POST['restaurant_id']))
         except (KeyError, User.DoesNotExist):
             return JsonResponse(code=403, error='Bad apikey')
-       # else:
-	#    r = Review(description=request.POST['editreview'], created=datetime.datetime.now(), user=user, restaurant=restaurant)
-         #  r.save()
-        #return reviews(request, restaurant)
+    else:
+        return JsonResponse(code=403, error='Bad request')
+
+def deletereview(request):
+    if request.method == 'POST' and 'apikey' in request.POST:
+        try:
+	    review = Review.objects.get(pk=int(request.POST['review_id'])) 
+            review.delete()
+	    return JsonResponse(getUserReviews(reviews))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error='Bad apikey')
     else:
         return JsonResponse(code=403, error='Bad request')
 

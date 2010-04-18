@@ -19,4 +19,5 @@ urlpatterns = patterns('foodo.api.views',
     (r'^users/reviews/(?P<apikey>\w+)/$', 'userreviews'),
     (r'^order/$', 'order'),
     (r'^users/edit/review/', 'editreview'),
+    (r'^users/delete/review/', 'deletereview'),
 )
