@@ -112,7 +112,7 @@ def getReviewDict(reviews):
         d['Reviews'].append({
             "id": review.id,
             "description": review.description, 
-            "created": str(review.created),
+            "created": str(review.created)[0:19],
             "user": "%s %s" % (review.user.firstName, review.user.lastName),
         })
     return d
@@ -128,7 +128,7 @@ Date: \t %s
 User: %s
 ------------------------
 Item \t Price
-''' % (order.id, order.created, "%s %s (%s)" % (order.user.firstName, order.user.lastName, order.user.email))
+''' % (order.id, str(order.created)[0:19], "%s %s (%s)" % (order.user.firstName, order.user.lastName, order.user.email))
     
     s = 0
     for line in order.orderline_set.all():
