@@ -437,6 +437,9 @@ def notifications(request):
     if request.method == 'POST':
         user = User.objects.get(apikey=request.POST['apikey'])
         orders = Order.objects.filter(user=user, confirmed=True, notified=False)
+        for o in orders:
+            o.notified = True
+            o.save()
         
         return JsonResponse(getNotificationDict(orders))
     else:
