@@ -103,6 +103,8 @@ class Order(models.Model):
     user = models.ForeignKey(User)
     restaurant = models.ForeignKey(Restaurant)
     created = models.DateTimeField(auto_now=True)
+    confirmed = models.BooleanField()
+    notified = models.BooleanField()
 
     def __unicode__(self):
         return "#%d - Order for %s" % (self.pk, self.restaurant.name)
@@ -112,3 +114,8 @@ class OrderLine(models.Model):
     order = models.ForeignKey(Order)
     count = models.IntegerField()
     price = models.IntegerField()
+
+class Notification(models.Model):
+    order = models.ForeignKey(Order)
+    message = models.CharField(max_length=256)
+    created = models.DateTimeField(auto_now=True)
