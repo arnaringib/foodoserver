@@ -20,4 +20,6 @@ urlpatterns = patterns('foodo.api.views',
     (r'^order/$', 'order'),
     (r'^users/edit/review/', 'editreview'),
     (r'^users/delete/review/', 'deletereview'),
+    (r'^users/notifications/$', 'notifications'),
+    (r'^users/orderstatus/(?P<order_id>\d+)/$', 'orderstatus'),
 )

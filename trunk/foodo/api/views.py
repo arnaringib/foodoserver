@@ -93,6 +93,36 @@ def getUserOrders(orders):
             r_b['orderlines'].append(r)
         d['Orders'].append(r_b)
     return d
+    
+def getNotificationDict(orders):
+    d = {'Notifications': []}
+    for order in orders:
+        od = {
+            'restaurant_id': order.restaurant.pk, 
+            'restaurant': order.restaurant.name,
+            'order_id': order.pk,
+        }
+        d['Notifications'].append(od)
+        
+    return d
+        
+def getOrderStatusDict(order):
+    d = {'Order': {
+            'restaurant_id': order.restaurant.pk,
+            'restaurant_name': order.restaurant.name,
+            'orderlines': [],
+            'totalprice': 0
+        }}
+    orderlines = OrderLine.objects.filter(order=order)
+    for orderline in orderlines:
+        r = {'price': orderline.price,
+             'count': orderline.count,
+             'menuitem': orderline.item.name,
+             'menuitem_id': orderline.item.id,
+             'menuitem_price': orderline.item.price,}
+        d['Order']['orderlines'].append(r)
+        d['Order']['totalprice'] += orderline.price * orderline.count
+    return d
 
 def getUserReviews(reviews):
     d = {'Reviews': []}
@@ -120,6 +150,7 @@ def getReviewDict(reviews):
 def getOrderDict(order):
     d = {'Order': {'id': order.pk, 'user': order.user.lastName}}
     return d
+
     
 def createOrderMessage(order):
     m = '''
@@ -402,8 +433,28 @@ def near(request, lat, lng, km_distance):
     return JsonResponse(r_dict)
 
 
-
-
+def notifications(request):
+    if request.method == 'POST':
+        user = User.objects.get(apikey=request.POST['apikey'])
+        orders = Order.objects.filter(user=user, confirmed=True, notified=False)
+        
+        return JsonResponse(getNotificationDict(orders))
+    else:
+        return JsonResponse(code=403, error='Bad request')
+        
+def orderstatus(request,order_id):
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(apikey=request.POST['apikey'])
+            order = Order.objects.get(user=user, pk=order_id)
+            
+            return JsonResponse(getOrderStatusDict(order))
+        except (KeyError, User.DoesNotExist):
+            return JsonResponse(code=403, error="Bad api key")
+        except (KeyError, Order.DoesNotExist):
+            return JsonResponse(code=403, error="Order not found")
+    else:
+        return JsonResponse(code=403, error='Bad request')
 
 
 
