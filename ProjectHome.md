@@ -1,0 +1,1 @@
+The django server code for Foodo
